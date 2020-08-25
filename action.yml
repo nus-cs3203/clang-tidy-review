@@ -23,12 +23,8 @@ inputs:
     required: false
   include:
     description: 'Comma-separated list of files or patterns to include'
-    default: '"*.[ch],*.[ch]xx,*.[ch]pp,*.[ch]++,*.cc,*.hh"'
+    default: '"**/*.[ch],**/*.[ch]xx,**/*.[ch]pp,**/*.[ch]++,**/*.cc,**/*.hh"'
     required: false
-  exclude:
-    description: 'Comma-separated list of files or patterns to exclude'
-    required: false
-    default: ''
   pr:
     default: ${{ github.event.pull_request.number }}
   repo:
@@ -47,4 +43,3 @@ runs:
     - --build_dir=${{ inputs.build_dir }}
     - --clang_tidy_checks=${{ inputs.clang_tidy_checks }}
     - --include ${{ inputs.include }}
-    - --exclude ${{ inputs.exclude }}
