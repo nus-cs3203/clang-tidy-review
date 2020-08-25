@@ -7,7 +7,7 @@
 
 import argparse
 import itertools
-import fnmatch
+import glob
 import json
 import os
 from operator import itemgetter
@@ -193,7 +193,6 @@ def main(
     clang_tidy_binary,
     token,
     include,
-    exclude,
 ):
 
     diff = get_pr_diff(repo, pr_number, token)
@@ -202,14 +201,10 @@ def main(
     line_ranges = get_line_ranges(diff)
     print(f"Line filter for clang-tidy:\n{line_ranges}\n")
 
-    changed_files = [filename.target_file[2:] for filename in diff]
+    # changed_files = [filename.target_file[2:] for filename in diff]
     files = []
     for pattern in include:
-        files.extend(fnmatch.filter(changed_files, pattern))
-    if exclude is None:
-        exclude = []
-    for pattern in exclude:
-        files = [f for f in files if not fnmatch.fnmatch(f, pattern)]
+        files.extend(glob.glob(pattern, recursive=True))
 
     if files == []:
         print("No files to check!")
@@ -257,19 +252,11 @@ if __name__ == "__main__":
         help="Comma-separated list of files or patterns to include",
         type=str,
         nargs="?",
-        default="*.[ch],*.[ch]xx,*.[ch]pp,*.[ch]++,*.cc,*.hh",
-    )
-    parser.add_argument(
-        "--exclude",
-        help="Comma-separated list of files or patterns to exclude",
-        nargs="?",
-        default="",
+        default="**/*.[ch],**/*.[ch]xx,**/*.[ch]pp,**/*.[ch]++,**/*.cc,**/*.hh",
     )
     parser.add_argument("--token", help="github auth token")
 
     args = parser.parse_args()
-
-    exclude = args.exclude.split(",") if args.exclude is not None else None
 
     main(
         repo=args.repo,
@@ -279,5 +266,4 @@ if __name__ == "__main__":
         clang_tidy_binary=args.clang_tidy_binary,
         token=args.token,
         include=args.include.split(","),
-        exclude=exclude,
     )
